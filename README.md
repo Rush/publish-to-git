@@ -1,7 +1,7 @@
 # publish-to-git
-Publish private npm packages to Git repositories with npm publish semantics.
+Publish private npm packages to Git repositories with npm publish semantics (uses same files as `npm publish`)
 
-Default behavior takes the version from package.json, runs `npm pack` and then publishes the contents as an orphan tag `v<VERSION>` (for example `v1.0.0`)
+Default behavior takes the version from package.json, runs `npm pack` and then pushes the contents to an orphan tag `v<VERSION>` (for example `v1.0.0`)
 
 Such tags can be easily referenced in `package.json` providing proper versioning to private Git npm packages along with an easy publish path compatible with `npm`.
 
@@ -9,6 +9,7 @@ Such tags can be easily referenced in `package.json` providing proper versioning
 ```js
 npm install --save-dev publish-to-git
 ```
+Requirements: `node > 8.0.0` and `git` command being in the `PATH`.
 
 ## Consumption of private NPM packages
 For Github
@@ -79,11 +80,16 @@ publish(options).then(() => {
 Please see https://github.com/Rush/publish-to-git/blob/master/main.js for reference
 
 ## Usage in Drone CI
+
+This example assumes that the developer pushes a tag that's identical to the version in package json. CI will complete the build and override tag contents. If you find this approach ugly, you could push tags in form of `build-v1.0.0` and then have `publish-to-git` publish using default options.
+
 ```yaml
 pipeline:
-  # other pipelines here
+  # other pipelines here, like build etc.
   publish-to-git:
     commands:
+      - git config --global user.email "admin@drone" # git will complain if these are not set
+      - git config --global user.name "Drone CI"
       - npx publish-to-git --force # this will override existing tag with npm package contents
     when:
       event: tag
