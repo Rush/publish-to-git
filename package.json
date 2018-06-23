@@ -1,0 +1,16 @@
+{
+  "name": "publish-to-git",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Damian Kaczmarek <rush@rushbase.net>",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "gh-pages": "^1.2.0"
+  }
+}
