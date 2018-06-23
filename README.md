@@ -13,20 +13,20 @@ Requirements: `node > 8.0.0` and `git` command being in the `PATH`.
 
 ## Consumption of private NPM packages
 For Github
-```
+```json
 "some-package": "reponame/repo#v1.0.0",
 "some-package-with-semver": "reponame/repo#semver:^v1.0.0",
 ```
 
 For Gitlab
-```
-"some-package": "gitlab:reponame/repo#v1.0.0"
+```json
+"some-package": "gitlab:reponame/repo#v1.0.0",
 "some-package-with-semver": "gitlab:reponame/repo#semver:^v1.0.0",
 ```
 
 For some other Git repo:
-```
-"some-package": "git+ssh://git@somehow.com:somerepo#v1.0.0"
+```json
+"some-package": "git+ssh://git@somehow.com:somerepo#v1.0.0",
 "some-package-with-semver": "git+ssh://git@somehow.com:somerepo#semver:^v1.0.0",
 ```
 
