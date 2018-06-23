@@ -58,5 +58,25 @@ Examples:
   publish-to-git --force    # useful in CI and when we want to override the same tag which triggered the build
 ```
 
+## Programmatic usage
+
+```js
+const { publish } = require('publish-to-git');
+
+const options = {
+  tag: 'v1.0.0', // you can also provide version: '1.0.0' instead of tag
+  push: { // set to false to not push
+    remote: 'origin', // set to URL or remote name
+    force: false, // set to true to force push
+  }
+};
+
+publish(options).then(() => {
+  console.log('Done');
+});
+```
+
+Please see https://github.com/Rush/publish-to-git/blob/master/main.js for reference
+
 ## License
 MIT
