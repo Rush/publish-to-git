@@ -53,9 +53,9 @@ Options:
   --force    Override any existing tag on the remote as well as locally (git tag -f, git push -f) [boolean]
 
 Examples:
-  main.js --tag v2.1.3 --no-push     # by default version from package.json is used
-  main.js --remote https://USER:GITHUB_TOKEN@github.com/USER/REPO
-  main.js --force    # useful in CI and when we want to override the same tag which triggered the build
+  publish-to-git --tag v2.1.3 --no-push     # by default version from package.json is used
+  publish-to-git --remote https://USER:GITHUB_TOKEN@github.com/USER/REPO
+  publish-to-git --force    # useful in CI and when we want to override the same tag which triggered the build
 ```
 
 ## License
