@@ -3,7 +3,7 @@ const ghpages = require('gh-pages');
 
 Promise.promisifyAll(ghpages);
 
-ghpages.publish('dist', {
+ghpages.publishAsync('dist', {
   branch: null,
   push: false,
   tag: 'dupa'
