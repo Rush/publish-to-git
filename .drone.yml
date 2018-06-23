@@ -3,4 +3,4 @@ pipeline:
     image: node:8
     commands:
       - npm install
-      - node index.js
+      - node main.js
