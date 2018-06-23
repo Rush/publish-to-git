@@ -94,7 +94,6 @@ ${currentCommitMessage}`;
     await execFileAsync('git', ['remote', 'add', '-f', temporaryRemote, tmpRepoDir]);
 
     const forceOptions = push.force ? ['-f'] : [];
-    console.log('FOrce options', forceOptions);
 
     await execFileAsync('git', ['tag', ...forceOptions, tag, `${temporaryRemote}/master`]);
 
