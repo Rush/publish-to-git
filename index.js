@@ -1,0 +1,121 @@
+const Promise = require('bluebird');
+const childProcess = require('child_process');
+const fs = require('fs');
+const tar = require('tar');
+const path = require('path');
+var tmp = require('tmp');
+
+Promise.promisifyAll(childProcess);
+Promise.promisifyAll(fs);
+Promise.promisifyAll(tar);
+Promise.promisifyAll(tmp);
+
+const { execFileAsync, spawn } = childProcess;
+const { unlinkAsync } = fs;
+
+tmp.setGracefulCleanup();
+
+function spawnNpmWithOutput(args, options) {
+  if(!options.verbose) {
+    return execFileAsync('npm', args, options);
+  }
+
+  return new Promise((resolve, reject) => {
+    const proc = spawn('npm', args, Object.assign(options, {
+      stdio: ['inherit', 'pipe', 'inherit'],
+      env: Object.assign({}, process.env, Boolean(process.stdout.isTTY) && {
+        NPM_CONFIG_COLOR: 'always'
+      })
+    }));
+    let outData = '';
+    proc.on('exit', exitCode => {
+      if(exitCode === 0) { 
+        resolve(outData);
+      }
+      reject(new Error(`npm failed with error code ${exitCode}`));
+    });
+    proc.on('error', reject);
+    proc.stdout.on('data', data => {
+      outData += data.toString('utf8');
+    });
+  });
+}
+
+async function packWithNpm({ sourceDir, targetDir, verbose }) {
+  const packedFile = (await spawnNpmWithOutput(['pack', sourceDir], {
+    cwd: targetDir,
+    verbose
+  })).trim();
+
+  const packedFileAbsolute = path.join(path.resolve(targetDir), packedFile);
+
+  try {
+    await tar.extractAsync({
+      strip: 1,
+      cwd: targetDir,
+      file: packedFileAbsolute
+    });
+  } finally {
+    await unlinkAsync(packedFileAbsolute);
+  }
+}
+
+async function publish({tag, version, push, packOptions}, pack = packWithNpm) {
+  if (!tag) {
+    tag = `v${version}`;
+  }
+
+  const tmpRepoDir = await tmp.dirAsync();
+  let temporaryRemote = path.basename(tmpRepoDir);
+
+  try {
+    const gitInitPromise = execFileAsync('git', ['init'], {
+      cwd: tmpRepoDir
+    })
+
+    await pack(Object.assign({
+      sourceDir: process.cwd(),
+      targetDir: tmpRepoDir,
+    }, packOptions));
+
+    await gitInitPromise;
+    await execFileAsync('git', ['add', '-A'], {
+      cwd: tmpRepoDir
+    });
+
+    const currentCommitMessage = (await execFileAsync('git', ['log', '-n', '1', '--pretty=oneline', '--decorate=full'])).trim();
+    const message = `Published by publish-to-git
+${currentCommitMessage}`;
+
+    await execFileAsync('git', ['commit', '-m', message], {
+      cwd: tmpRepoDir
+    });
+
+    await execFileAsync('git', ['remote', 'add', '-f', temporaryRemote, tmpRepoDir]);
+
+    const forceOptions = push.force ? ['-f'] : [];
+    console.log('FOrce options', forceOptions);
+
+    await execFileAsync('git', ['tag', ...forceOptions, tag, `${temporaryRemote}/master`]);
+
+    if (push) {
+      console.warn(`Pushing to remote ${push.remote}`);
+
+      try {
+        await execFileAsync('git', ['push', ...forceOptions, push.remote || 'origin', tag]);
+      } catch(err) {
+        await execFileAsync('git', ['tag', '-d', tag]);
+        throw err;
+      }
+      console.log(`Pushed tag to ${push.remote} with tag: ${tag}`);
+    } else {
+      console.log(`Created local tag: ${tag}`);
+    }
+  } finally {
+    try {
+      await execFileAsync('git', ['remote', 'remove', temporaryRemote]);
+    } catch(err) {}
+  }
+}
+
+module.exports = { publish, packWithNpm };
