@@ -10,6 +10,6 @@
   "author": "Damian Kaczmarek <rush@rushbase.net>",
   "license": "MIT",
   "dependencies": {
-    "bluebird": "^3.5.1",
+    "bluebird": "^3.5.1"
   }
 }
