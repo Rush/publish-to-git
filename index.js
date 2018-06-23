@@ -3,7 +3,7 @@ const childProcess = require('child_process');
 const fs = require('fs');
 const tar = require('tar');
 const path = require('path');
-var tmp = require('tmp');
+const tmp = require('tmp');
 
 Promise.promisifyAll(childProcess);
 Promise.promisifyAll(fs);
@@ -68,10 +68,13 @@ async function publish({tag, version, push, packOptions}, pack = packWithNpm) {
   const tmpRepoDir = await tmp.dirAsync();
   let temporaryRemote = path.basename(tmpRepoDir);
 
+  const git = (...args) => execFileAsync('git', args);
+  const gitInTmpRepo = (...args) => execFileAsync('git', args, {
+    cwd: tmpRepoDir
+  });
+
   try {
-    const gitInitPromise = execFileAsync('git', ['init'], {
-      cwd: tmpRepoDir
-    })
+    const gitInitPromise = gitInTmpRepo('init');
 
     await pack(Object.assign({
       sourceDir: process.cwd(),
@@ -79,31 +82,27 @@ async function publish({tag, version, push, packOptions}, pack = packWithNpm) {
     }, packOptions));
 
     await gitInitPromise;
-    await execFileAsync('git', ['add', '-A'], {
-      cwd: tmpRepoDir
-    });
+    await gitInTmpRepo('add', '-A');
 
-    const currentCommitMessage = (await execFileAsync('git', ['log', '-n', '1', '--pretty=oneline', '--decorate=full'])).trim();
+    const currentCommitMessage = (await git('log', '-n', '1', '--pretty=oneline', '--decorate=full')).trim();
     const message = `Published by publish-to-git
 ${currentCommitMessage}`;
 
-    await execFileAsync('git', ['commit', '-m', message], {
-      cwd: tmpRepoDir
-    });
-
-    await execFileAsync('git', ['remote', 'add', '-f', temporaryRemote, tmpRepoDir]);
+    await gitInTmpRepo('commit', '-m', message);
+    
+    await git('remote', 'add', '-f', temporaryRemote, tmpRepoDir);
 
     const forceOptions = push.force ? ['-f'] : [];
 
-    await execFileAsync('git', ['tag', ...forceOptions, tag, `${temporaryRemote}/master`]);
+    await git('tag', ...forceOptions, tag, `${temporaryRemote}/master`);
 
     if (push) {
       console.warn(`Pushing to remote ${push.remote}`);
 
       try {
-        await execFileAsync('git', ['push', ...forceOptions, push.remote || 'origin', tag]);
+        await git('push', ...forceOptions, push.remote || 'origin', tag);
       } catch(err) {
-        await execFileAsync('git', ['tag', '-d', tag]);
+        await git('tag', '-d', tag);
         throw err;
       }
       console.log(`Pushed tag to ${push.remote} with tag: ${tag}`);
@@ -112,7 +111,7 @@ ${currentCommitMessage}`;
     }
   } finally {
     try {
-      await execFileAsync('git', ['remote', 'remove', temporaryRemote]);
+      await git('remote', 'remove', temporaryRemote);
     } catch(err) {}
   }
 }
