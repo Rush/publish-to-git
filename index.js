@@ -60,19 +60,20 @@ async function packWithNpm({ sourceDir, targetDir, verbose }) {
   }
 }
 
-async function publish({tag, version, push, source, packOptions}, pack = packWithNpm) {
+async function publish({tag, version, push, packOptions}, pack = packWithNpm) {
   if (!tag) {
     tag = `v${version}`;
   }
 
   const tmpRepoDir = await tmp.dirAsync();
   let temporaryRemote = path.basename(tmpRepoDir);
+
   try {
     const gitInitPromise = execFileAsync('git', ['init'], {
       cwd: tmpRepoDir
     })
 
-    await packWithNpm(Object.assign({
+    await pack(Object.assign({
       sourceDir: process.cwd(),
       targetDir: tmpRepoDir,
     }, packOptions));
@@ -91,12 +92,17 @@ ${currentCommitMessage}`;
     });
 
     await execFileAsync('git', ['remote', 'add', '-f', temporaryRemote, tmpRepoDir]);
-    await execFileAsync('git', ['tag', tag, `${temporaryRemote}/master`]);
+
+    const forceOptions = push.force ? ['-f'] : [];
+    console.log('FOrce options', forceOptions);
+
+    await execFileAsync('git', ['tag', ...forceOptions, tag, `${temporaryRemote}/master`]);
 
     if (push) {
       console.warn(`Pushing to remote ${push.remote}`);
+
       try {
-        await execFileAsync('git', ['push', push.remote || 'origin', tag]);
+        await execFileAsync('git', ['push', ...forceOptions, push.remote || 'origin', tag]);
       } catch(err) {
         await execFileAsync('git', ['tag', '-d', tag]);
         throw err;
