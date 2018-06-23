@@ -78,5 +78,16 @@ publish(options).then(() => {
 
 Please see https://github.com/Rush/publish-to-git/blob/master/main.js for reference
 
+## Usage in Drone CI
+```yaml
+pipeline:
+  # other pipelines here
+  publish-to-git:
+    commands:
+      - npx publish-to-git --force # this will override existing tag with npm package contents
+    when:
+      event: tag
+```
+
 ## License
 MIT
