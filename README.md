@@ -57,3 +57,6 @@ Examples:
   main.js --remote https://USER:GITHUB_TOKEN@github.com/USER/REPO
   main.js --force    # useful in CI and when we want to override the same tag which triggered the build
 ```
+
+## License
+MIT
