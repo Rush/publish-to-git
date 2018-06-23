@@ -11,6 +11,5 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.5.1",
-    "gh-pages": "^1.2.0"
   }
 }
