@@ -1,5 +1,4 @@
 const Promise = require('bluebird');
-const ghpages = require('gh-pages');
 
 const childProcess = require('child_process')
 
