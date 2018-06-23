@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const { publish } = require('./');
 const yargs = require('yargs');
 const argv = yargs
