@@ -1,0 +1,6 @@
+pipeline:
+  install:
+    image: node:8
+    commands:
+      - npm install
+      - node index.js
