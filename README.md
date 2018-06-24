@@ -3,7 +3,7 @@ Publish private npm packages to Git repositories with npm publish semantics (use
 
 Default behavior takes the version from package.json, runs `npm pack` and then pushes the contents to an orphan tag `v<VERSION>` (for example `v1.0.0`). It's similar to how `gh-pages` works.
 
-Such tags can be easily referenced in `package.json` providing proper versioning to private Git npm packages along with an easy publish path compatible with `npm`.
+Such tags can be easily referenced to in `package.json`. It provides proper versioning to private Git npm packages along with an easy publish path that's compatible with `npm`.
 
 ## Installation
 ```js
@@ -11,7 +11,7 @@ npm install --save-dev publish-to-git
 ```
 Requirements: `node > 8.0.0` and `git` command being in the `PATH`.
 
-## Consumption of private NPM packages
+## Consumption of private Git NPM packages
 For Github
 ```json
 "some-package": "reponame/repo#v1.0.0",
