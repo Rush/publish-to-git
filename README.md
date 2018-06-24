@@ -95,5 +95,15 @@ pipeline:
       event: tag
 ```
 
+## Quick note on semver with https
+Older versions of `npm` prior to `6.0` had a bug with supporting semver git packages. It's no longer a problem since npm `6.0`.
+
+For automated publishing to Github `~/.netc` and `npm`/`git` will automatically pick it up:
+```
+machine github.com
+login <GITHUB_TOKEN>
+password=x-oauth-basic
+```
+
 ## License
 MIT
