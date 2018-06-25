@@ -18,7 +18,7 @@ For Github
 "some-package-with-semver": "reponame/repo#semver:^v1.0.0",
 ```
 
-For Gitlab
+For Gitlab or BitBucket (use `bitbucket:`)
 ```json
 "some-package": "gitlab:reponame/repo#v1.0.0",
 "some-package-with-semver": "gitlab:reponame/repo#semver:^v1.0.0",
@@ -29,6 +29,8 @@ For some other Git repo:
 "some-package": "git+ssh://git@somehow.com:somerepo#v1.0.0",
 "some-package-with-semver": "git+ssh://git@somehow.com:somerepo#semver:^v1.0.0",
 ```
+
+Note: Installing from Github/Gitlab/Bitbucket seems to be more efficient due to the way [it conditionally turns on shallow clone](https://github.com/zkat/pacote/blob/ccc6e9094c2e872f09cc12ae966a0cbc1a570eed/lib/fetchers/git.js#L169).
 
 ## Usage
 In package.json
