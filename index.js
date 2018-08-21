@@ -42,13 +42,13 @@ function spawnNpmWithOutput(args, options) {
 }
 
 async function packWithNpm({ sourceDir, targetDir, verbose }) {
-  const packedFile = (await spawnNpmWithOutput(['pack', sourceDir], {
+  const output = (await spawnNpmWithOutput(['pack', sourceDir], {
     cwd: targetDir,
     verbose
-  })).trim();
-
+  })).trim().split(/\n/);
+  const packedFile = output[output.length - 1];
   const packedFileAbsolute = path.join(path.resolve(targetDir), packedFile);
-
+  
   try {
     await tar.extractAsync({
       strip: 1,
