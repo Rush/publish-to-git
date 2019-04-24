@@ -17,7 +17,7 @@ tmp.setGracefulCleanup();
 
 function spawnNpmWithOutput(args, options) {
   if(!options.verbose) {
-    return execFileAsync('npm', args, options);
+    return execFileAsync(/^win/.test(process.platform) ? 'npm.cmd' : 'npm', args, options);
   }
 
   return new Promise((resolve, reject) => {
