@@ -9,6 +9,7 @@ const argv = yargs
   .describe('remote', 'Git remote, may be remote name or full URL to the repo')
   .default('remote', 'origin')
   .describe('tag', 'Tag name to which src will be published, for example: v1.2.3 - by default uses version from package.json')
+  .describe('branch', "Branch name to append this new release to - none by default")
   .describe('push', 'Push update to the git remote (pass --no-push to disable)')
   .describe('force', 'Override any existing tag on the remote as well as locally (git tag -f, git push -f)')
   .boolean('push')
@@ -22,6 +23,7 @@ const packageJson = require(path.join(process.cwd(), '/package.json'));
 
 publish({
   tag: argv.tag,
+  branch: argv.branch,
   name: packageJson.name,
   version: packageJson.version,
   push: argv.push && {
