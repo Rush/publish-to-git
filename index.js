@@ -21,7 +21,7 @@ function spawnNpmWithOutput(args, options) {
   }
 
   return new Promise((resolve, reject) => {
-    const proc = spawn('npm', args, Object.assign(options, {
+    const proc = spawn(process.platform === 'win32' ? 'npm.cmd' : 'npm', args, Object.assign(options, {
       stdio: ['inherit', 'pipe', 'inherit'],
       env: Object.assign({}, process.env, Boolean(process.stdout.isTTY) && {
         NPM_CONFIG_COLOR: 'always'
