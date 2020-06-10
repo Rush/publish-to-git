@@ -52,6 +52,7 @@ Options:
   --version  Show version number [boolean]
   --remote   Git remote, may be remote name or full URL to the repo [default: "origin"]
   --tag      Tag name to which src will be published, for example: v1.2.3 - by default uses version from package.json
+  --branch   Branch name to append this new release to - none by default
   --push     Push update to the git remote (pass --no-push to disable) [boolean] [default: "true"]
   --force    Override any existing tag on the remote as well as locally (git tag -f, git push -f) [boolean]
 

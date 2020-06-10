@@ -60,49 +60,58 @@ async function packWithNpm({ sourceDir, targetDir, verbose }) {
   }
 }
 
-async function publish({tag, version, push, packOptions}, pack = packWithNpm) {
+async function publish({tag, branch, version, push, packOptions}, pack = packWithNpm) {
   if (!tag) {
     tag = `v${version}`;
   }
 
-  const tmpRepoDir = await tmp.dirAsync();
-  let temporaryRemote = path.basename(tmpRepoDir);
+  const tmpDir = await tmp.dirAsync();
 
   const git = (...args) => execFileAsync('git', args);
-  const gitInTmpRepo = (...args) => execFileAsync('git', args, {
-    cwd: tmpRepoDir
+  const gitInTmpDir = (...args) => execFileAsync('git', args, {
+    cwd: tmpDir
   });
 
+  const tmpBranch = (branch)
+    ? undefined
+    : `publish-to-git-temp-${Math.random().toString(36).substring(2,12)}`;
+
   try {
-    const gitInitPromise = gitInTmpRepo('init');
+    if (branch) {
+      await git('worktree', 'add', '--no-checkout', tmpDir, branch);
+    } else {
+      await git('worktree', 'add', '--detach', tmpDir);
+      await gitInTmpDir('checkout', '--orphan', tmpBranch);
+      await gitInTmpDir('rm', '-rf', '.');
+    }
 
     await pack(Object.assign({
       sourceDir: process.cwd(),
-      targetDir: tmpRepoDir,
+      targetDir: tmpDir,
     }, packOptions));
 
-    await gitInitPromise;
-    await gitInTmpRepo('add', '-A');
+    await gitInTmpDir('add', '-A');
 
     const currentCommitMessage = (await git('log', '-n', '1', '--pretty=oneline', '--decorate=full')).trim();
     const message = `Published by publish-to-git
 ${currentCommitMessage}`;
 
-    await gitInTmpRepo('commit', '-m', message);
-    
-    await git('remote', 'add', '-f', temporaryRemote, tmpRepoDir);
+    await gitInTmpDir('commit', '-m', message);
 
     const forceOptions = push.force ? ['-f'] : [];
 
-    await git('tag', ...forceOptions, tag, `${temporaryRemote}/master`);
+    await git('tag', ...forceOptions, tag, `refs/heads/${branch || tmpBranch}`);
 
     if (push) {
       console.warn(`Pushing to remote ${push.remote}`);
 
       try {
-        await git('push', ...forceOptions, push.remote || 'origin', tag);
+        const objectsToPush = [`refs/tags/${tag}`];
+        if (branch) objectsToPush.push(`refs/heads/${branch}`);
+        await git('push', ...forceOptions, push.remote || 'origin', ...objectsToPush);
       } catch(err) {
         await git('tag', '-d', tag);
+        if (branch) await gitInTmpDir('reset', '--hard', `HEAD~`);
         throw err;
       }
       console.log(`Pushed tag to ${push.remote} with tag: ${tag}`);
@@ -111,7 +120,8 @@ ${currentCommitMessage}`;
     }
   } finally {
     try {
-      await git('remote', 'remove', temporaryRemote);
+      await git('worktree', 'remove', tmpDir);
+      if (tmpBranch) await git('branch', '-D', tmpBranch);
     } catch(err) {}
   }
 }
