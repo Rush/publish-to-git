@@ -94,7 +94,10 @@ ${currentCommitMessage}`;
 
     const forceOptions = push.force ? ['-f'] : [];
 
-    await git('tag', ...forceOptions, tag, `${temporaryRemote}/master`);
+    let branchList = await git('branch', '-r')
+    const branchName = new RegExp(`${temporaryRemote}/(\\w+)`, '').exec(branchList).at(1)
+
+    await git('tag', ...forceOptions, tag, `${temporaryRemote}/${branchName}`);
 
     if (push) {
       console.warn(`Pushing to remote ${push.remote}`);
